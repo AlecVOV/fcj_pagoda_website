@@ -1,5 +1,8 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-stone-50 to-amber-50">
+    <!-- Loading Screen -->
+    <AppLoading />
+    
     <NuxtRouteAnnouncer />
     <AppNavbar />
     <main class="pt-20">
