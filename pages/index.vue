@@ -43,60 +43,80 @@
     </div>
 
     <!-- Main Content - Shows after loading -->
-    <div v-else class="min-h-screen relative">
-      <!-- Background Image -->
-      <div 
-        class="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style="background-image: url('/buddha_wallpaper.jpg');"
-      >
-        <div class="absolute inset-0 bg-black/30"></div>
-      </div>
-
-    <!-- Content -->
-    <div class="relative z-10 flex flex-col items-center justify-center min-h-screen px-4">
-      <!-- Main Title -->
-      <div class="text-center mb-12">
-        <h1 class="font-serif text-4xl md:text-6xl font-bold text-white mb-4 drop-shadow-lg">
-          Motivation Corner
-        </h1>
-        <p class="font-sans text-lg md:text-xl text-white/90 max-w-2xl mx-auto drop-shadow">
-          Share your wishes with the Buddha and find inspiration from others
-        </p>
-      </div>
-
-      <!-- Send Wishes Button -->
-      <button
-        @click="openWishModal"
-        class="btn-zen text-lg md:text-xl px-12 py-6 mb-16 shadow-2xl hover:shadow-3xl"
-      >
-        Send Wishes to the Universe
-      </button>
-
-      <!-- Wishes Display Area -->
-      <div class="w-full max-w-6xl">
-        <div v-if="wishes.length === 0" class="text-center text-white/80 font-sans text-lg">
-          <p>No wishes have been shared yet. Be the first to send your wish to the universe!</p>
+    <div v-else>
+      <!-- Hero Section with Background Image -->
+      <div class="relative min-h-screen overflow-hidden rounded-b-3xl">
+        <!-- Background Image Slideshow with Blur -->
+        <div 
+          class="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-1000"
+          :style="{ backgroundImage: `url('/buddha_wallpaper/${currentImage}')` }"
+        >
+          <div class="absolute inset-0 backdrop-blur-sm bg-black/10"></div>
         </div>
-        
-        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div
-            v-for="wish in wishes"
-            :key="wish.id"
-            class="wish-card lift-up fade-in"
-          >
-            <div class="flex items-start justify-between mb-3">
-              <div class="flex items-center space-x-2">
-                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
-                  <Icon name="heroicons:heart" class="w-4 h-4 text-white" />
-                </div>
-                <span class="font-sans text-sm text-stone-600">Anonymous</span>
-              </div>
-              <span class="font-sans text-xs text-stone-500">{{ formatDate(wish.createdAt) }}</span>
-            </div>
-            
-            <p class="font-sans text-stone-800 leading-relaxed">{{ wish.content }}</p>
+
+        <!-- Hero Content -->
+        <div class="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-16">
+          <!-- Main Title -->
+          <div class="text-center mb-12">
+            <h1 class="font-serif text-4xl md:text-6xl font-bold text-white mb-4 drop-shadow-lg">
+              Motivation Corner
+            </h1>
+            <p class="font-sans text-lg md:text-xl text-white/90 max-w-2xl mx-auto drop-shadow">
+              Share an anonymous wish. Breathe in calm, breathe out doubt. Let your words drift across a serene horizon.
+            </p>
           </div>
+
+          <!-- Send Wishes Button -->
+          <button
+            @click="openWishModal"
+            class="btn-zen text-lg md:text-xl px-12 py-6 shadow-2xl hover:shadow-3xl"
+          >
+            Send a wish
+          </button>
         </div>
+      </div>
+
+      <!-- Wish Wall Section - Below the image -->
+      <div class="bg-gradient-to-b from-ivory to-cream-gold py-20 px-4">
+        <div class="max-w-6xl mx-auto">
+          <!-- Wish Wall Header -->
+          <div class="text-center mb-12">
+            <h2 class="font-serif text-3xl md:text-4xl font-bold text-wood-brown mb-4">
+              Wish Wall
+            </h2>
+            <p class="font-sans text-lg text-stone-700 max-w-2xl mx-auto">
+              Flowing intentions from the community. New wishes gently fade in.
+            </p>
+          </div>
+
+          <!-- Wishes Display Area -->
+          <div v-if="wishes.length === 0" class="text-center py-16">
+            <div class="bg-white rounded-2xl p-12 max-w-2xl mx-auto shadow-xl">
+              <p class="font-sans text-stone-600 text-lg leading-relaxed">
+                Your wish wall is empty. Be the first to share a gentle intention.
+              </p>
+            </div>
+          </div>
+          
+          <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div
+              v-for="wish in wishes"
+              :key="wish.id"
+              class="wish-card lift-up fade-in"
+            >
+              <div class="flex items-start justify-between mb-3">
+                <div class="flex items-center space-x-2">
+                  <div class="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
+                    <Icon name="heroicons:heart" class="w-4 h-4 text-white" />
+                  </div>
+                  <span class="font-sans text-sm text-stone-600">Anonymous</span>
+                </div>
+                <span class="font-sans text-xs text-stone-500">{{ formatDate(wish.createdAt) }}</span>
+              </div>
+              
+              <p class="font-sans text-stone-800 leading-relaxed">{{ wish.content }}</p>
+            </div>
+          </div>
       </div>
     </div>
 
@@ -158,54 +178,55 @@ useHead({
 })
 
 // Reactive data
-const isLoading = ref(true)
-const progress = ref(0)
 const showWishModal = ref(false)
 const newWish = ref('')
 const wishes = ref([])
+const currentImage = ref('buddha_wallpaper_1.jpg')
 
-// Control navbar/footer visibility from app.vue
-const isLoadingPage = useState('isLoadingPage', () => true)
+// Array of available buddha wallpaper images
+const buddhaImages = [
+  'buddha_wallpaper_1.jpg',
+  'buddha_wallpaper_2.jpg',
+  'buddha_wallpaper_3.jpg',
+  'buddha_wallpaper_4.jpg',
+  'buddha_wallpaper_5.jpg',
+  'buddha_wallpaper_6.jpg',
+  'buddha_wallpaper_7.jpg',
+  'buddha_wallpaper_8.jpg',
+  'buddha_wallpaper_9.jpg',
+  'buddha_wallpaper_10.jpg',
+  'buddha_wallpaper_11.jpg',
+  'buddha_wallpaper_12.jpg',
+  'buddha_wallpaper_13.jpg',
+]
 
-// Check if user has seen loading screen in this session
+// Image rotation function
+let imageRotationInterval = null
+
+const startImageRotation = () => {
+  let currentIndex = 0
+  
+  imageRotationInterval = setInterval(() => {
+    currentIndex = (currentIndex + 1) % buddhaImages.length
+    currentImage.value = buddhaImages[currentIndex]
+  }, 5000) // Change image every 5 seconds
+}
+
 onMounted(() => {
-  const hasSeenLoading = sessionStorage.getItem('hasSeenLoading')
-  
-  if (!hasSeenLoading) {
-    // First visit - show loading animation
-    sessionStorage.setItem('hasSeenLoading', 'true')
-    isLoadingPage.value = true
-
-    // Load for exactly 3.5 seconds, reaching 100%
-    const duration = 3000 // 3.5 seconds
-    const interval = 50 // Update every 50ms
-    const increment = 100 / (duration / interval)
-    
-    const loadingInterval = setInterval(() => {
-      if (progress.value < 100) {
-        progress.value += increment
-        if (progress.value >= 100) {
-          progress.value = 100
-        }
-      } else {
-        clearInterval(loadingInterval)
-        // Hide loading screen after completion
-        setTimeout(() => {
-          isLoading.value = false
-          isLoadingPage.value = false
-        }, 500)
-      }
-    }, interval)
-  } else {
-    // Already seen loading - skip directly to content
-    isLoading.value = false
-    isLoadingPage.value = false
-  }
-  
   // Load wishes from localStorage
   const savedWishes = localStorage.getItem('fcaj-wishes')
   if (savedWishes) {
     wishes.value = JSON.parse(savedWishes)
+  }
+
+  // Start image rotation
+  startImageRotation()
+})
+
+// Cleanup on component unmount
+onBeforeUnmount(() => {
+  if (imageRotationInterval) {
+    clearInterval(imageRotationInterval)
   }
 })
 
