@@ -48,7 +48,7 @@
       <div class="relative min-h-screen overflow-hidden rounded-b-3xl">
         <!-- Background Image Slideshow with Blur -->
         <div 
-          class="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-1000"
+          class="absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-[2000ms] ease-in-out"
           :style="{ backgroundImage: `url('/buddha_wallpaper/${currentImage}')` }"
         >
           <div class="absolute inset-0 backdrop-blur-sm bg-black/10"></div>
@@ -209,7 +209,7 @@ const startImageRotation = () => {
   imageRotationInterval = setInterval(() => {
     currentIndex = (currentIndex + 1) % buddhaImages.length
     currentImage.value = buddhaImages[currentIndex]
-  }, 5000) // Change image every 5 seconds
+  }, 6000) // Change image every 6 seconds for smoother transition
 }
 
 onMounted(() => {
