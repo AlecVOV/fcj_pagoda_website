@@ -1,16 +1,21 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-stone-50 to-amber-50">
-    <!-- Loading Screen -->
-    <AppLoading />
-    
     <NuxtRouteAnnouncer />
-    <AppNavbar />
+    <ClientOnly>
+      <AppNavbar v-show="!isLoadingPage" />
+    </ClientOnly>
     <main class="pt-20">
       <NuxtPage />
     </main>
-    <AppFooter />
+    <ClientOnly>
+      <AppFooter v-show="!isLoadingPage" />
+    </ClientOnly>
   </div>
 </template>
+
+<script setup>
+const isLoadingPage = useState('isLoadingPage', () => false)
+</script>
 
 <style>
 @tailwind base;

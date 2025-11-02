@@ -1,66 +1,61 @@
 <template>
+  <!-- Loading Screen - Auto-starts and navigates to index -->
   <div v-if="isLoading" class="loading-screen">
-    <div class="loading-content">
-      <!-- FCAJ Logo/Text -->
-      <div class="logo-container">
-        <h1 class="font-serif text-5xl md:text-7xl font-bold text-stone-800 mb-4">
-          FCAJ
-        </h1>
-        <p class="font-sans text-lg text-stone-600 mb-8">
-          Zen & Sharing
-        </p>
-      </div>
-
-      <!-- Lotus Flower Icon -->
-      <div class="lotus-icon mb-8">
-        <svg class="w-16 h-16 mx-auto text-amber-600 animate-pulse" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M12 2C12 2 9 6 9 10C9 11.66 10.34 13 12 13C13.66 13 15 11.66 15 10C15 6 12 2 12 2Z"/>
-          <path d="M7 10C7 10 4 12 4 15C4 16.66 5.34 18 7 18C8.66 18 10 16.66 10 15C10 12 7 10 7 10Z"/>
-          <path d="M17 10C17 10 20 12 20 15C20 16.66 18.66 18 17 18C15.34 18 14 16.66 14 15C14 12 17 10 17 10Z"/>
-          <path d="M12 13C12 13 9 15 9 18C9 19.66 10.34 21 12 21C13.66 21 15 19.66 15 18C15 15 12 13 12 13Z"/>
-        </svg>
-      </div>
-
-      <!-- Loading Bar -->
-      <div class="loading-bar-container">
-        <div class="loading-bar-track">
-          <div class="loading-bar-fill" :style="{ width: progress + '%' }"></div>
+      <div class="loading-content">
+        <!-- FCAJ Logo/Text -->
+        <div class="logo-container">
+          <h1 class="font-serif text-5xl md:text-7xl font-bold text-stone-800 mb-4">
+            FCAJ
+          </h1>
+          <p class="font-sans text-lg text-stone-600 mb-8">
+            Zen & Sharing
+          </p>
         </div>
-        <p class="font-sans text-sm text-stone-500 mt-3">
-          Preparing your peaceful journey...
-        </p>
+
+        <!-- Lotus Flower Icon - FIXED CENTERING -->
+        <div class="lotus-icon mb-8">
+          <svg class="w-16 h-16 mx-auto text-amber-600 animate-pulse" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2C12 2 9 6 9 10C9 11.66 10.34 13 12 13C13.66 13 15 11.66 15 10C15 6 12 2 12 2Z"/>
+            <path d="M7 10C7 10 4 12 4 15C4 16.66 5.34 18 7 18C8.66 18 10 16.66 10 15C10 12 7 10 7 10Z"/>
+            <path d="M17 10C17 10 20 12 20 15C20 16.66 18.66 18 17 18C15.34 18 14 16.66 14 15C14 12 17 10 17 10Z"/>
+            <path d="M12 13C12 13 9 15 9 18C9 19.66 10.34 21 12 21C13.66 21 15 19.66 15 18C15 15 12 13 12 13Z"/>
+          </svg>
+        </div>
+
+        <!-- Loading Bar -->
+        <div class="loading-bar-container">
+          <div class="loading-bar-track">
+            <div class="loading-bar-fill" :style="{ width: progress + '%' }"></div>
+          </div>
+          <p class="font-sans text-sm text-stone-500 mt-3">
+            Preparing your peaceful journey... {{ Math.floor(progress) }}%
+          </p>
+        </div>
+
+      </div>
+
+      <!-- Decorative Elements -->
+      <div class="decorative-elements">
+        <div class="floating-circle circle-1"></div>
+        <div class="floating-circle circle-2"></div>
+        <div class="floating-circle circle-3"></div>
       </div>
     </div>
-
-    <!-- Decorative Elements -->
-    <div class="decorative-elements">
-      <div class="floating-circle circle-1"></div>
-      <div class="floating-circle circle-2"></div>
-      <div class="floating-circle circle-3"></div>
-    </div>
-  </div>
 </template>
 
 <script setup>
 const isLoading = ref(true)
 const progress = ref(0)
+const router = useRouter()
 
 onMounted(() => {
+  // Mark that user has seen the loading screen
+  sessionStorage.setItem('hasSeenLoading', 'true')
+  
   // Load for exactly 5 seconds, reaching 100%
-  const duration = 5000 // 5 seconds in milliseconds
-  const interval = 50 // Update every 50ms for smooth animation
+  const duration = 5000 // 5 seconds
+  const interval = 50 // Update every 50ms
   const increment = 100 / (duration / interval)
-  
-  let pageLoaded = false
-  
-  // Wait for page to be fully loaded
-  if (document.readyState === 'complete') {
-    pageLoaded = true
-  } else {
-    window.addEventListener('load', () => {
-      pageLoaded = true
-    })
-  }
   
   const loadingInterval = setInterval(() => {
     if (progress.value < 100) {
@@ -70,25 +65,12 @@ onMounted(() => {
       }
     } else {
       clearInterval(loadingInterval)
-      // Wait for both: progress bar at 100% AND page fully loaded
-      const checkAndHide = () => {
-        if (pageLoaded) {
-          setTimeout(() => {
-            isLoading.value = false
-          }, 500)
-        } else {
-          setTimeout(checkAndHide, 100)
-        }
-      }
-      checkAndHide()
+      // After loading completes, navigate to index page
+      setTimeout(() => {
+        router.push('/')
+      }, 500)
     }
   }, interval)
-  
-  // Fallback: Force hide after max 6 seconds to prevent indefinite loading
-  setTimeout(() => {
-    clearInterval(loadingInterval)
-    isLoading.value = false
-  }, 6000)
 })
 </script>
 
@@ -117,6 +99,9 @@ onMounted(() => {
   text-align: center;
   z-index: 10;
   animation: fadeInUp 0.8s ease-out;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 @keyframes fadeInUp {
@@ -145,6 +130,9 @@ onMounted(() => {
 
 .lotus-icon {
   animation: lotusRotate 4s ease-in-out infinite;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 @keyframes lotusRotate {
@@ -182,7 +170,7 @@ onMounted(() => {
   );
   background-size: 200% 100%;
   border-radius: 999px;
-  transition: width 0.3s ease-out;
+  transition: width 0.05s linear;
   animation: shimmer 1.5s ease-in-out infinite;
   box-shadow: 0 2px 8px rgba(184, 115, 51, 0.4);
 }
@@ -243,26 +231,6 @@ onMounted(() => {
   50% {
     transform: translate(20px, -20px) scale(1.1);
     opacity: 0.5;
-  }
-}
-
-/* Fade out animation when loading completes */
-.loading-screen {
-  animation: fadeOut 0.5s ease-out forwards;
-  animation-play-state: paused;
-}
-
-.loading-screen:not([data-loading]) {
-  animation-play-state: running;
-}
-
-@keyframes fadeOut {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-    pointer-events: none;
   }
 }
 </style>
