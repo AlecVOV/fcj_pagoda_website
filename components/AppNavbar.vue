@@ -27,7 +27,7 @@
               :class="{ 'bg-amber-100': isMusicMenuOpen }"
             >
               <Icon 
-                name="heroicons:radio" 
+                name="heroicons:musical-note" 
                 class="w-6 h-6 text-amber-700"
               />
               <!-- Playing indicator -->
@@ -54,46 +54,46 @@
       </div>
 
       <!-- Music Dropdown Menu (Desktop) -->
-      <Transition name="slide-down">
-        <div 
-          v-if="isMusicMenuOpen"
-          class="hidden md:block absolute right-4 top-20 bg-white rounded-lg shadow-xl p-4 w-64 z-50"
-        >
-          <h3 class="font-serif text-lg font-semibold text-stone-800 mb-3">Peaceful Sounds</h3>
-          <div class="space-y-2">
-            <button
-              v-for="track in musicTracks"
-              :key="track.id"
-              @click="selectTrack(track)"
-              class="w-full text-left px-4 py-3 rounded-lg transition-colors duration-200 flex items-center space-x-3"
-              :class="currentTrack?.id === track.id 
-                ? 'bg-amber-100 text-amber-800' 
-                : 'hover:bg-stone-50 text-stone-700'"
-            >
-              <!-- Playing indicator for current track -->
-              <div class="flex-shrink-0">
-                <Icon 
-                  v-if="currentTrack?.id === track.id"
-                  name="heroicons:musical-note" 
-                  class="w-5 h-5 text-amber-700 animate-pulse"
-                />
-                <Icon 
-                  v-else
-                  name="heroicons:musical-note" 
-                  class="w-5 h-5 text-stone-400"
-                />
-              </div>
-              <span class="text-sm flex-1">{{ track.name }}</span>
-              <!-- Checkmark for selected -->
+      <!-- Music Dropdown Menu (Desktop) -->
+    <Transition name="slide-down">
+      <div 
+        v-if="isMusicMenuOpen"
+        class="hidden md:block absolute right-4 top-20 bg-white rounded-lg shadow-xl p-4 w-64 z-50"
+      >
+        <h3 class="font-serif text-lg font-semibold text-stone-800 mb-3">Peaceful Sounds</h3>
+        <div class="space-y-2">
+          <button
+            v-for="track in musicTracks"
+            :key="track.id"
+            @click="selectTrack(track)"
+            class="w-full text-left px-4 py-3 rounded-lg transition-colors duration-200 flex items-center space-x-3"
+            :class="currentTrack?.id === track.id 
+              ? 'bg-amber-100 text-amber-800' 
+              : 'hover:bg-stone-50 text-stone-700'"
+          >
+            <!-- Playing indicator for current track -->
+            <div class="flex-shrink-0">
               <Icon 
                 v-if="currentTrack?.id === track.id"
-                name="heroicons:check-circle-solid" 
-                class="w-5 h-5 text-green-600"
+                name="heroicons:musical-note" 
+                class="w-5 h-5 text-amber-700 animate-pulse"
               />
-            </button>
-          </div>
+              <Icon 
+                v-else
+                name="heroicons:musical-note" 
+                class="w-5 h-5 text-stone-400"
+              />
+            </div>
+            <span class="text-sm flex-1">{{ track.name }}</span>
+            <!-- Round pulsing dot for selected track -->
+            <span 
+              v-if="currentTrack?.id === track.id"
+              class="w-3 h-3 bg-green-500 rounded-full animate-pulse flex-shrink-0"
+            ></span>
+          </button>
         </div>
-      </Transition>
+      </div>
+    </Transition>
 
       <!-- Mobile Menu -->
       <Transition name="slide-down">
@@ -144,7 +144,7 @@
                   <Icon 
                     v-if="currentTrack?.id === track.id"
                     name="heroicons:check-circle-solid" 
-                    class="w-5 h-5 text-green-600"
+                    class="w-5 h-5 text-green-400"
                   />
                 </button>
               </div>
