@@ -182,6 +182,8 @@ const showWishModal = ref(false)
 const newWish = ref('')
 const wishes = ref([])
 const currentImage = ref('buddha_wallpaper_1.jpg')
+const isLoading = ref(false)
+const progress = ref(0)
 
 // Array of available buddha wallpaper images
 const buddhaImages = [
@@ -213,6 +215,37 @@ const startImageRotation = () => {
 }
 
 onMounted(() => {
+  // Check if user has seen the loading screen in this session
+  const hasSeenLoading = sessionStorage.getItem('hasSeenLoading')
+  
+  if (!hasSeenLoading) {
+    // Show loading screen
+    isLoading.value = true
+    
+    // Mark that user has seen the loading screen
+    sessionStorage.setItem('hasSeenLoading', 'true')
+    
+    // Load for exactly 5 seconds, reaching 100%
+    const duration = 5000 // 5 seconds
+    const interval = 50 // Update every 50ms
+    const increment = 100 / (duration / interval)
+    
+    const loadingInterval = setInterval(() => {
+      if (progress.value < 100) {
+        progress.value += increment
+        if (progress.value >= 100) {
+          progress.value = 100
+        }
+      } else {
+        clearInterval(loadingInterval)
+        // After loading completes, hide loading screen
+        setTimeout(() => {
+          isLoading.value = false
+        }, 500)
+      }
+    }, interval)
+  }
+
   // Load wishes from localStorage
   const savedWishes = localStorage.getItem('fcaj-wishes')
   if (savedWishes) {
@@ -268,6 +301,7 @@ const formatDate = (dateString) => {
   })
 }
 </script>
+
 
 <style scoped>
 /* Loading Screen Styles */
