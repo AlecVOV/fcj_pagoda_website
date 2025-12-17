@@ -1,0 +1,18 @@
+Stage 1:  
+Prompt on bolt 
+Create 4 pages: Motivation Corner, Wisfome Corner, Charity Corner, Temple Guide
+Add 3 music player when in the website
+Add a QR for charity
+
+Stage 2: 
+Add a loading pages
+Add a wish wall below buddha image
+Adding more buddha image + blur effect + transittion effect
+Add icon for the website + Change icon in the music selection
+
+Stage 3:
+Add a supabase data to store wishes
+Remove temple guide pages
+
+Private on supabase:
+Database password: Chilonthon@02102004
