@@ -54,7 +54,6 @@
       </div>
 
       <!-- Music Dropdown Menu (Desktop) -->
-      <!-- Music Dropdown Menu (Desktop) -->
     <Transition name="slide-down">
       <div 
         v-if="isMusicMenuOpen"
@@ -176,7 +175,6 @@ const navItems = [
   { name: 'Motivation Corner', path: '/' },
   { name: 'Wisdom Corner', path: '/wisdom' },
   { name: 'Charity Corner', path: '/charity' },
-  { name: 'Temple Guide', path: '/temple-guide' }
 ]
 
 const isMobileMenuOpen = ref(false)

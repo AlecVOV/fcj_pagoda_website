@@ -59,12 +59,6 @@
         >
           Charity Corner
         </NuxtLink>
-        <NuxtLink 
-          to="/temple-guide" 
-          class="font-sans text-sm hover:text-white transition-colors duration-200 underline underline-offset-4"
-        >
-          Temple Guide
-        </NuxtLink>
       </div>
     </div>
 
