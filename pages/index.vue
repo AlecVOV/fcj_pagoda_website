@@ -99,24 +99,28 @@
           </div>
           
           <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div
-              v-for="wish in wishes"
-              :key="wish.id"
-              class="wish-card lift-up fade-in"
-            >
-              <div class="flex items-start justify-between mb-3">
-                <div class="flex items-center space-x-2">
-                  <div class="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
-                    <Icon name="heroicons:heart" class="w-4 h-4 text-white" />
+            <!-- TransitionGroup for smooth animations when wishes are added -->
+            <TransitionGroup name="wish-list">
+              <div
+                v-for="wish in wishes"
+                :key="wish.id"
+                class="wish-card lift-up fade-in"
+              >
+                <div class="flex items-start justify-between mb-3">
+                  <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
+                      <Icon name="heroicons:heart" class="w-4 h-4 text-white" />
+                    </div>
+                    <span class="font-sans text-sm text-stone-600">{{ wish.author || 'Anonymous' }}</span>
                   </div>
-                  <span class="font-sans text-sm text-stone-600">Anonymous</span>
+                  <span class="font-sans text-xs text-stone-500">{{ formatDate(wish.created_at || wish.createdAt) }}</span>
                 </div>
-                <span class="font-sans text-xs text-stone-500">{{ formatDate(wish.createdAt) }}</span>
+                
+                <p class="font-sans text-stone-800 leading-relaxed">{{ wish.content }}</p>
               </div>
-              
-              <p class="font-sans text-stone-800 leading-relaxed">{{ wish.content }}</p>
-            </div>
+            </TransitionGroup>
           </div>
+        </div>
       </div>
     </div>
 
@@ -135,6 +139,16 @@
           Write your wish, hope, or positive thought to share with the universe and others.
         </p>
         
+        <!-- Author Name Field (NEW!) -->
+        <input
+          v-model="wishAuthor"
+          type="text"
+          placeholder="Your name (optional)"
+          class="w-full p-4 mb-4 border border-stone-300 rounded-lg font-sans text-stone-800 focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+          maxlength="50"
+        />
+        
+        <!-- Wish Content Field -->
         <textarea
           v-model="newWish"
           placeholder="Type your wish here..."
@@ -149,27 +163,29 @@
           <div class="space-x-3">
             <button
               @click="closeWishModal"
-              class="px-4 py-2 text-stone-600 hover:text-stone-800 font-sans transition-colors"
+              :disabled="isSaving"
+              class="px-4 py-2 text-stone-600 hover:text-stone-800 font-sans transition-colors disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               @click="sendWish"
-              :disabled="!newWish.trim() || newWish.length > 500"
+              :disabled="!newWish.trim() || newWish.length > 500 || isSaving"
               class="btn-zen px-6 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Send Wish
+              {{ isSaving ? 'Sending...' : 'Send Wish' }}
             </button>
           </div>
         </div>
       </div>
     </div>
-    </div>
   </div>
 </template>
 
 <script setup>
-// Meta tags
+// ==========================================
+// META TAGS
+// ==========================================
 useHead({
   title: 'Motivation Corner - FCAJ Team',
   meta: [
@@ -177,15 +193,30 @@ useHead({
   ]
 })
 
-// Reactive data
+// ==========================================
+// SUPABASE COMPOSABLE
+// ==========================================
+// Import functions from our composable to interact with database
+const { fetchWishes, addWish } = useWishes()
+
+// ==========================================
+// REACTIVE STATE
+// ==========================================
+// UI State
 const showWishModal = ref(false)
-const newWish = ref('')
-const wishes = ref([])
-const currentImage = ref('buddha_wallpaper_1.jpg')
 const isLoading = ref(false)
 const progress = ref(0)
+const isSaving = ref(false)
 
-// Array of available buddha wallpaper images
+// Wish Form Data
+const newWish = ref('')
+const wishAuthor = ref('')
+
+// Wishes Data - NOW FROM SUPABASE!
+const wishes = ref([])
+
+// Image Slideshow
+const currentImage = ref('buddha_wallpaper_1.jpg')
 const buddhaImages = [
   'buddha_wallpaper_1.jpg',
   'buddha_wallpaper_2.jpg',
@@ -202,7 +233,9 @@ const buddhaImages = [
   'buddha_wallpaper_13.jpg',
 ]
 
-// Image rotation function
+// ==========================================
+// IMAGE ROTATION
+// ==========================================
 let imageRotationInterval = null
 
 const startImageRotation = () => {
@@ -211,10 +244,121 @@ const startImageRotation = () => {
   imageRotationInterval = setInterval(() => {
     currentIndex = (currentIndex + 1) % buddhaImages.length
     currentImage.value = buddhaImages[currentIndex]
-  }, 6000) // Change image every 6 seconds for smoother transition
+  }, 6000) // Change image every 6 seconds
 }
 
-onMounted(() => {
+// ==========================================
+// SUPABASE FUNCTIONS
+// ==========================================
+
+/**
+ * Load wishes from Supabase database
+ * Called on page mount
+ */
+const loadWishesFromDatabase = async () => {
+  try {
+    console.log('📥 Loading wishes from Supabase...')
+    const data = await fetchWishes()
+    wishes.value = data || []
+    console.log(`✅ Loaded ${wishes.value.length} wishes from database`)
+  } catch (error) {
+    console.error('❌ Error loading wishes:', error)
+    wishes.value = []
+  }
+}
+
+/**
+ * Send wish to Supabase database
+ * 
+ * FLOW:
+ * 1. Validate form
+ * 2. Show loading state
+ * 3. Save to Supabase
+ * 4. Add to local wishes array
+ * 5. Close modal and reset form
+ */
+const sendWish = async () => {
+  // Validation
+  if (!newWish.value.trim() || newWish.value.length > 500) {
+    return
+  }
+
+  // Start saving
+  isSaving.value = true
+
+  try {
+    console.log('💾 Saving wish to Supabase...')
+    
+    // Prepare wish data
+    const wishData = {
+      content: newWish.value.trim(),
+      author: wishAuthor.value.trim() || 'Anonymous',
+      wallpaperId: buddhaImages.indexOf(currentImage.value) + 1
+    }
+
+    // Save to database
+    const result = await addWish(wishData)
+
+    if (result.success) {
+      console.log('✅ Wish saved successfully!')
+      
+      // Add new wish to the top of the list for immediate display
+      wishes.value.unshift(result.data)
+      
+      // Close modal and reset form
+      closeWishModal()
+      
+      // Optional: Show success notification
+      // You could add a toast notification here
+    } else {
+      console.error('❌ Failed to save wish:', result.error)
+      alert('Failed to save wish. Please try again.')
+    }
+  } catch (error) {
+    console.error('❌ Unexpected error:', error)
+    alert('An unexpected error occurred. Please try again.')
+  } finally {
+    // Always reset saving state
+    isSaving.value = false
+  }
+}
+
+// ==========================================
+// MODAL FUNCTIONS
+// ==========================================
+const openWishModal = () => {
+  showWishModal.value = true
+  newWish.value = ''
+  wishAuthor.value = ''
+}
+
+const closeWishModal = () => {
+  showWishModal.value = false
+  newWish.value = ''
+  wishAuthor.value = ''
+}
+
+// ==========================================
+// UTILITY FUNCTIONS
+// ==========================================
+const formatDate = (dateString) => {
+  if (!dateString) return 'Just now'
+  
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+// ==========================================
+// LIFECYCLE HOOKS
+// ==========================================
+onMounted(async () => {
+  console.log('🚀 Page mounted, initializing...')
+  
   // Check if user has seen the loading screen in this session
   const hasSeenLoading = sessionStorage.getItem('hasSeenLoading')
   
@@ -225,9 +369,9 @@ onMounted(() => {
     // Mark that user has seen the loading screen
     sessionStorage.setItem('hasSeenLoading', 'true')
     
-    // Load for exactly 5 seconds, reaching 100%
-    const duration = 5000 // 5 seconds
-    const interval = 50 // Update every 50ms
+    // Animate loading bar for 5 seconds
+    const duration = 5000
+    const interval = 50
     const increment = 100 / (duration / interval)
     
     const loadingInterval = setInterval(() => {
@@ -246,14 +390,13 @@ onMounted(() => {
     }, interval)
   }
 
-  // Load wishes from localStorage
-  const savedWishes = localStorage.getItem('fcaj-wishes')
-  if (savedWishes) {
-    wishes.value = JSON.parse(savedWishes)
-  }
+  // Load wishes from Supabase database
+  await loadWishesFromDatabase()
 
   // Start image rotation
   startImageRotation()
+  
+  console.log('✨ Page ready!')
 })
 
 // Cleanup on component unmount
@@ -262,49 +405,12 @@ onBeforeUnmount(() => {
     clearInterval(imageRotationInterval)
   }
 })
-
-// Methods
-const openWishModal = () => {
-  showWishModal.value = true
-  newWish.value = ''
-}
-
-const closeWishModal = () => {
-  showWishModal.value = false
-  newWish.value = ''
-}
-
-const sendWish = () => {
-  if (!newWish.value.trim() || newWish.value.length > 500) return
-  
-  const wish = {
-    id: Date.now(),
-    content: newWish.value.trim(),
-    createdAt: new Date().toISOString()
-  }
-  
-  wishes.value.unshift(wish)
-  
-  // Save to localStorage
-  localStorage.setItem('fcaj-wishes', JSON.stringify(wishes.value))
-  
-  closeWishModal()
-}
-
-const formatDate = (dateString) => {
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
 </script>
 
-
 <style scoped>
-/* Loading Screen Styles */
+/* ==========================================
+   LOADING SCREEN STYLES
+   ========================================== */
 .loading-screen {
   position: fixed;
   inset: 0;
@@ -466,5 +572,27 @@ const formatDate = (dateString) => {
     transform: translate(20px, -20px) scale(1.1);
     opacity: 0.5;
   }
+}
+
+/* ==========================================
+   WISH LIST TRANSITIONS
+   ========================================== */
+.wish-list-enter-active,
+.wish-list-leave-active {
+  transition: all 0.5s ease;
+}
+
+.wish-list-enter-from {
+  opacity: 0;
+  transform: translateY(-30px);
+}
+
+.wish-list-leave-to {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.wish-list-move {
+  transition: transform 0.5s ease;
 }
 </style>

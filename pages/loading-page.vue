@@ -52,8 +52,8 @@ onMounted(() => {
   // Mark that user has seen the loading screen
   sessionStorage.setItem('hasSeenLoading', 'true')
   
-  // Load for exactly 5 seconds, reaching 100%
-  const duration = 5000 // 5 seconds
+  // Load for exactly 4 seconds, reaching 100%
+  const duration = 4000 // 4 seconds
   const interval = 50 // Update every 50ms
   const increment = 100 / (duration / interval)
   
